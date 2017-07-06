@@ -2,311 +2,67 @@
 
 1:	 * @Author: Brandon Baars <brandon>
 
-2:	 * @Date:   Saturday, June 3rd 2017, 2:04:24 pm
+2:	 * @Date:   Thursday, July 6th 2017, 6:08:16 pm
 
-3:	 * @Filename: main.c
+3:	 * @Filename: test.c
 
 4:	 * @Last modified by:   brandon
 
-5:	 * @Last modified time: Monday, July 3rd 2017, 5:22:35 pm
+5:	 * @Last modified time: Thursday, July 6th 2017, 6:35:41 pm
 
-6:	 *
+6:	 */
 
-7:	 * CIS 361 Final Project
+7:	
 
-8:	 * GREP Simulator using c in a UNIX Environment
+8:	
 
-9:	 **/
+9:	#include <stdio.h>
 
-10:	
+10:	#include <string.h>
 
-11:	#include <stdio.h>
+11:	#include <stdlib.h>
 
-12:	#include <stdlib.h>
+12:	
 
-13:	#include <sys/types.h>
+13:	int main(int argc, char const *argv[]) {
 
-14:	#include <sys/stat.h>
+14:	
 
-15:	#include <dirent.h>
+15:	  char buf[100] = "./main.c";
 
-16:	#include <unistd.h>
+16:	  char *directory;
 
-17:	#include <string.h>
+17:	  char *ptr;
 
-18:	#include <time.h>
+18:	  int ch = '/';
 
 19:	
 
-20:	void printUsage();
+20:	  if ((ptr = strrchr(buf, ch)) != NULL){
 
-21:	void callRequiredFunction(char * option);
+21:	    ptr = strrchr(buf, ch);
 
-22:	_Bool checkValidInput(char * option);
+22:	    ptr += 1;
 
-23:	void openFile();
+23:	    directory = (char *)malloc(strlen(buf) - strlen(ptr));
 
-24:	
+24:	    strncpy(directory, buf, strlen(buf) - strlen(ptr));
 
-25:	
+25:	    printf("The last occurence of %c in '%s' is '%s'\n", ch, directory, ptr);
 
-26:	char filename[256], option[10], parameter[512];
+26:	  } else {
 
-27:	
+27:	    directory = (char *)malloc(strlen(buf));
 
-28:	int main(int argc, char const *argv[]) {
+28:	    strncpy(directory, buf, strlen(buf));
 
-29:	
+29:	    printf("No Occurence, the filename is '%s'", directory);
 
-30:	  if (argc == 3 || argc == 4) {
+30:	  }
 
 31:	
 
-32:	      if (argc == 4) {
+32:	  return 0;
 
-33:	        strncpy(option, argv[1], sizeof(option));
-
-34:	        strncpy(parameter, argv[2], sizeof(parameter));
-
-35:	        strncpy(filename, argv[3], sizeof(filename));
-
-36:	      } else {
-
-37:	        strncpy(parameter, argv[1], sizeof(parameter));
-
-38:	        strncpy(filename, argv[2], sizeof(filename));
-
-39:	      }
-
-40:	
-
-41:	      /* checks for a valid command */
-
-42:	      if(checkValidInput(option)) {
-
-43:	        /* checks for next inputs to contain items */
-
-44:	        if(argc == 4) {
-
-45:	            printf("VALID GREP\n");
-
-46:	            callRequiredFunction(option);
-
-47:	        } else
-
-48:	            printUsage();
-
-49:	      } else if (argc == 3) {
-
-50:	        printf("VALID GREP\n");
-
-51:	        callRequiredFunction(option);
-
-52:	      } else {
-
-53:	        printUsage();
-
-54:	      }
-
-55:	    }
-
-56:	
-
-57:	    else {
-
-58:	      printUsage();
-
-59:	    }
-
-60:	
-
-61:	    return 0;
-
-62:	}
-
-63:	
-
-64:	/*
-
-65:	* Prints the grep command and the options with their descriptions to   * the user whenever invalid input has been entered.
-
-66:	*/
-
-67:	void printUsage() {
-
-68:	  puts("usage: ./grep [-options] [contentToSearchFor] [fileToSearchIn]");
-
-69:	  puts("[-c] Print only count of the lines\n[-i] iGnOre CaSe\n[-l] List only filenames of files containing a match\n[-n] Gives line number of pattern match\n[-v] Reverses search giving NOT containing string\n[-w] Only contain whole word matches\n[-x] Only contain whole line matches.");
-
-70:	}
-
-71:	
-
-72:	/*
-
-73:	* Checks the input commands from the user and return true if it's       * valid, or false if it's invalid.
-
-74:	*/
-
-75:	_Bool checkValidInput(char * option) {
-
-76:	
-
-77:	  /* checks the list of commands to see if one was a match,
-
-78:	    strcmp return 0 if they're a match so !strcmp returns true */
-
-79:	  if(!strcmp(option, "-i") || !strcmp(option, "-c") || !strcmp(option, "-l") || !strcmp(option, "-n") || !strcmp(option, "-v") || !strcmp(option, "-x") || !strcmp(option, "-w")) {
-
-80:	    return 1;
-
-81:	  }
-
-82:	
-
-83:	  return 0;
-
-84:	}
-
-85:	
-
-86:	void callRequiredFunction(char * option) {
-
-87:	
-
-88:	  if(!strcmp(option, "-c")) {
-
-89:	    // PRINT ONLY COUNT OF LINES
-
-90:	
-
-91:	  } else if (!strcmp(option, "-i")) {
-
-92:	    // IGNORE CASE
-
-93:	
-
-94:	  } else if(!strcmp(option, "-l")) {
-
-95:	
-
-96:	    //LIST ONLY FILE NAME
-
-97:	  }else if(!strcmp(option, "-n")) {
-
-98:	    //GIVES LINE NUMBER OF PATTER MATCH
-
-99:	
-
-100:	  } else if(!strcmp(option, "-v")) {
-
-101:	    //REVERSE SEARCH
-
-102:	
-
-103:	  } else if(!strcmp(option, "-w")) {
-
-104:	    //SELECT WHOLE WORD MATCHES ONLY
-
-105:	
-
-106:	  } else if(!strcmp(option, "-x")) {
-
-107:	    //WHOLE LINE MATCHES ONLY
-
-108:	
-
-109:	  } else {
-
-110:	    //NO OPTIONS WERE PASSED
-
-111:	    openFile();
-
-112:	
-
-113:	  }
-
-114:	}
-
-115:	
-
-116:	
-
-117:	void openFile() {
-
-118:	
-
-119:	  char cwd[512];
-
-120:	  char line[512];
-
-121:	  char directoryFiles[512];
-
-122:	  getcwd(cwd, 512);
-
-123:	  DIR *d = opendir("..");
-
-124:	  struct dirent* currententry;
-
-125:	  int lineNum = 0;
-
-126:	
-
-127:	    while((currententry=readdir(d))!=NULL){
-
-128:	      strcpy(directoryFiles, cwd);
-
-129:	      directoryFiles[strlen(directoryFiles)+1]='\0';
-
-130:	      directoryFiles[strlen(directoryFiles)]='/';
-
-131:	      strcat(directoryFiles,currententry->d_name);
-
-132:	      printf("%s \n", currententry->d_name);
-
-133:	    }
-
-134:	
-
-135:	    FILE *f = fopen(filename, "r");
-
-136:	
-
-137:	    if(f == NULL) {
-
-138:	      printf("We got an error");
-
-139:	    } else {
-
-140:	
-
-141:	      fgets(line, 1024, f);
-
-142:	
-
-143:	      FILE *outfile = fopen("output.txt", "w");
-
-144:	
-
-145:	      while (!feof(f)) {
-
-146:	        fprintf(outfile, "%d:\t%s\n", lineNum, line);
-
-147:	        printf("%d:\t%s\n", lineNum, line);
-
-148:	        fgets(line, 1024, f);
-
-149:	        ++lineNum;
-
-150:	      }
-
-151:	
-
-152:	      fclose(outfile);
-
-153:	    }
-
-154:	    fclose(f);
-
-155:	}
+33:	}
 
