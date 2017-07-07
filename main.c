@@ -3,7 +3,7 @@
  * @Date:   Saturday, June 3rd 2017, 2:04:24 pm
  * @Filename: main.c
  * @Last modified by:   brandon
- * @Last modified time: Thursday, July 6th 2017, 7:18:15 pm
+ * @Last modified time: Thursday, July 6th 2017, 9:07:23 pm
  *
  * CIS 361 Final Project
  * GREP Simulator using c in a UNIX Environment
@@ -22,7 +22,7 @@ void printUsage();
 void callRequiredFunction();
 _Bool checkValidInput();
 void openFile();
-void openFileinDirectory(char *directory, char *filename);
+void searchFileinDirectory(char *directory, char *filename);
 
 // TODO: Regular Expressions!
 
@@ -106,12 +106,17 @@ void callRequiredFunction() {
 
     /* copy the directory over to our newly allocated memory  */
     strncpy(directory, filename, strlen(filename) - strlen(ptr));
+
+    printf("DIRECTORY: %s\n", directory);
+
   } else {
 
     /* if there was no path given, then just the file name, our directory is set to our default of './' */
     directory = (char *)malloc(strlen("./"));
     strncpy(directory, "./", strlen("./"));
   }
+
+  printf("OPTION: %s\n", option);
 
 
   if(!strcmp(option, "-c")) {
@@ -121,69 +126,109 @@ void callRequiredFunction() {
     // IGNORE CASE
 
   } else if(!strcmp(option, "-l")) {
-
     //LIST ONLY FILE NAME
+    searchFileinDirectory(directory, filename);
+
   }else if(!strcmp(option, "-n")) {
     //GIVES LINE NUMBER OF PATTER MATCH
+    searchFileinDirectory(directory, filename);
 
   } else if(!strcmp(option, "-v")) {
     //REVERSE SEARCH
+    searchFileinDirectory(directory, filename);
 
   } else if(!strcmp(option, "-w")) {
     //SELECT WHOLE WORD MATCHES ONLY
 
   } else if(!strcmp(option, "-x")) {
     //WHOLE LINE MATCHES ONLY
+    searchFileinDirectory(directory, filename);
 
   } else {
     //NO OPTIONS WERE PASSED
-    openFileinDirectory(directory, filename);
-
+    searchFileinDirectory(directory, filename);
   }
 }
 
 
-void openFileinDirectory(char *directory, char *file) {
+void searchFileinDirectory(char *directory, char *file) {
 
   char line[512];
-  // getcwd(directory, 512);
   char directoryFiles[512];
-  DIR *d = opendir(directory);
+  DIR *d = opendir("../");
   struct dirent* currententry;
   int lineNum = 0;
+  _Bool isFile = 0;
 
-    while((currententry=readdir(d))!=NULL){
-      strcpy(directoryFiles, directory);
-      directoryFiles[strlen(directoryFiles)+1]='\0';
-      directoryFiles[strlen(directoryFiles)]='/';
-      strcat(directoryFiles,currententry->d_name);
-    }
+  if (d == NULL) {
+    printf("Not a directory.\n");
+    return;
+  }
 
-    FILE *f = fopen(file, "r");
+  while((currententry = readdir(d)) != NULL){
+    strcpy(directoryFiles, directory);
+    directoryFiles[strlen(directoryFiles) +1 ] = '\0';
+    directoryFiles[strlen(directoryFiles)] = '/';
+    strcat(directoryFiles,currententry->d_name);
+    printf("%s\n", currententry->d_name);
+  }
 
-    int count = 0;
+  FILE *f = fopen(file, "r");
 
-    if(f == NULL) {
-      printf("File does not exist.");
-    } else {
+  printf("FILE: %s\n", file);
 
+  int count = 0;
+
+  if(f == NULL) {
+    printf("File does not exist.\n");
+  } else {
+
+    fgets(line, 1024, f);
+
+    FILE *outfile = fopen("output.txt", "w");
+
+    /* while the end of file has not been reached */
+    while (!feof(f)) {
+
+      printf("%s\n", line);
+      fprintf(outfile, "%d:\t%s\n", lineNum, line);
       fgets(line, 1024, f);
 
-      FILE *outfile = fopen("output.txt", "w");
+      if(strstr(line, parameter)) {
 
-      /* while the end of file has not been reached */
-      while (!feof(f)) {
-        fprintf(outfile, "%d:\t%s\n", lineNum, line);
-        fgets(line, 1024, f);
-        if(strstr(line, parameter)) {
-          printf("%s\n", line);
+        /* WHOLE LINE MATCHES ONLY */
+        if(!strcmp(option, "-x")) {
+
+          /* must add terminating character to check if they're equal since the line ends with \0, so checking for whole line will be 'apples\n' != 'apples'; */
+          if(!strcmp(line, strcat(parameter, "\n"))) {
+            printf("%s",line);
+          }
+
+          /* LIST ONLY FILE NAME */
+        } else if(!strcmp(option, "-l")) {
+          isFile = 1;
+
+        /* GIVES LINE NUMBER OF PATTER MATCH */
+        } else if(!strcmp(option, "-n")) {
+          printf("%d\t%s\n",lineNum, line);
+
+        /* no options were passed and were not looking for reversing string */
+        } else if (strcmp(option, "-v")) {
+          printf("%s\n",line);
           count++;
         }
-
-        ++lineNum;
+      } else if (!strcmp(option, "-v") && strstr(line, parameter) == NULL) {
+        printf("%s\n", line);
       }
 
-      fclose(outfile);
+      ++lineNum;
     }
-    fclose(f);
+
+    if (isFile)
+      printf("%s\n", filename);
+
+    fclose(outfile);
+  }
+
+  fclose(f);
 }
