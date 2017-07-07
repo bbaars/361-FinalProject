@@ -3,7 +3,7 @@
  * @Date:   Saturday, June 3rd 2017, 2:04:24 pm
  * @Filename: main.c
  * @Last modified by:   brandon
- * @Last modified time: Thursday, July 6th 2017, 9:07:23 pm
+ * @Last modified time: Thursday, July 6th 2017, 9:33:55 pm
  *
  * CIS 361 Final Project
  * GREP Simulator using c in a UNIX Environment
@@ -107,17 +107,12 @@ void callRequiredFunction() {
     /* copy the directory over to our newly allocated memory  */
     strncpy(directory, filename, strlen(filename) - strlen(ptr));
 
-    printf("DIRECTORY: %s\n", directory);
-
   } else {
 
     /* if there was no path given, then just the file name, our directory is set to our default of './' */
     directory = (char *)malloc(strlen("./"));
     strncpy(directory, "./", strlen("./"));
   }
-
-  printf("OPTION: %s\n", option);
-
 
   if(!strcmp(option, "-c")) {
     // PRINT ONLY COUNT OF LINES
@@ -170,12 +165,10 @@ void searchFileinDirectory(char *directory, char *file) {
     directoryFiles[strlen(directoryFiles) +1 ] = '\0';
     directoryFiles[strlen(directoryFiles)] = '/';
     strcat(directoryFiles,currententry->d_name);
-    printf("%s\n", currententry->d_name);
+    //printf("%s\n", currententry->d_name);
   }
 
   FILE *f = fopen(file, "r");
-
-  printf("FILE: %s\n", file);
 
   int count = 0;
 
@@ -190,7 +183,7 @@ void searchFileinDirectory(char *directory, char *file) {
     /* while the end of file has not been reached */
     while (!feof(f)) {
 
-      printf("%s\n", line);
+      //printf("%s\n", line);
       fprintf(outfile, "%d:\t%s\n", lineNum, line);
       fgets(line, 1024, f);
 
@@ -200,12 +193,11 @@ void searchFileinDirectory(char *directory, char *file) {
         if(!strcmp(option, "-x")) {
 
           /* must add terminating character to check if they're equal since the line ends with \0, so checking for whole line will be 'apples\n' != 'apples'; */
-          if(!strcmp(line, strcat(parameter, "\n"))) {
+          if(!strcmp(line, strcat(parameter, "\n")))
             printf("%s",line);
-          }
-
+        }
           /* LIST ONLY FILE NAME */
-        } else if(!strcmp(option, "-l")) {
+        else if(!strcmp(option, "-l")) {
           isFile = 1;
 
         /* GIVES LINE NUMBER OF PATTER MATCH */
@@ -213,11 +205,11 @@ void searchFileinDirectory(char *directory, char *file) {
           printf("%d\t%s\n",lineNum, line);
 
         /* no options were passed and were not looking for reversing string */
-        } else if (strcmp(option, "-v")) {
-          printf("%s\n",line);
-          count++;
+        } else if (strcmp(option, "-v") != 0) {
+            printf("%s\n",line);
+            count++;
         }
-      } else if (!strcmp(option, "-v") && strstr(line, parameter) == NULL) {
+    } else if (!strcmp(option, "-v") && strstr(line, parameter) == NULL) {
         printf("%s\n", line);
       }
 
