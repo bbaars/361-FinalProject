@@ -3,7 +3,7 @@
  * @Date:   Saturday, June 3rd 2017, 2:04:24 pm
  * @Filename: main.c
  * @Last modified by:   brandon
- * @Last modified time: Thursday, July 6th 2017, 9:33:55 pm
+ * @Last modified time: Friday, July 7th 2017, 5:14:13 pm
  *
  * CIS 361 Final Project
  * GREP Simulator using c in a UNIX Environment
@@ -150,7 +150,7 @@ void searchFileinDirectory(char *directory, char *file) {
 
   char line[512];
   char directoryFiles[512];
-  DIR *d = opendir("../");
+  DIR *d = opendir(directory);
   struct dirent* currententry;
   int lineNum = 0;
   _Bool isFile = 0;
@@ -176,16 +176,13 @@ void searchFileinDirectory(char *directory, char *file) {
     printf("File does not exist.\n");
   } else {
 
-    fgets(line, 1024, f);
-
     FILE *outfile = fopen("output.txt", "w");
 
     /* while the end of file has not been reached */
-    while (!feof(f)) {
+    while (fgets(line, 1024, f)) {
 
       //printf("%s\n", line);
       fprintf(outfile, "%d:\t%s\n", lineNum, line);
-      fgets(line, 1024, f);
 
       if(strstr(line, parameter)) {
 
