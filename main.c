@@ -3,7 +3,7 @@
  * @Date:   Saturday, June 3rd 2017, 2:04:24 pm
  * @Filename: main.c
  * @Last modified by:   brandon
- * @Last modified time: Friday, July 7th 2017, 5:14:13 pm
+ * @Last modified time: Wednesday, July 19th 2017, 7:54:55 pm
  *
  * CIS 361 Final Project
  * GREP Simulator using c in a UNIX Environment
@@ -17,6 +17,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <time.h>
+#include <ctype.h>
 
 void printUsage();
 void callRequiredFunction();
@@ -99,6 +100,9 @@ void callRequiredFunction() {
     ptr = strrchr(filename, ch);
 
     /* add 1 to get the filename */
+
+    // TODO: The first character of PTR To see if its a *
+
     ptr += 1;
 
     /* allocate just enough memory to store our directory */
@@ -116,9 +120,15 @@ void callRequiredFunction() {
 
   if(!strcmp(option, "-c")) {
     // PRINT ONLY COUNT OF LINES
+    searchFileinDirectory(directory, filename);
 
   } else if (!strcmp(option, "-i")) {
     // IGNORE CASE
+    for (int i = 0 ; i < strlen(parameter) ; i++) {
+      parameter[i] = tolower(parameter[i]);
+    }
+
+    searchFileinDirectory(directory, filename);
 
   } else if(!strcmp(option, "-l")) {
     //LIST ONLY FILE NAME
@@ -133,7 +143,8 @@ void callRequiredFunction() {
     searchFileinDirectory(directory, filename);
 
   } else if(!strcmp(option, "-w")) {
-    //SELECT WHOLE WORD MATCHES ONLY
+    // SELECT WHOLE WORD MATCHES ONLY
+    // TOKEN BY SPACE DO STRCMP
 
   } else if(!strcmp(option, "-x")) {
     //WHOLE LINE MATCHES ONLY
@@ -154,6 +165,7 @@ void searchFileinDirectory(char *directory, char *file) {
   struct dirent* currententry;
   int lineNum = 0;
   _Bool isFile = 0;
+  char *lineCpy;
 
   if (d == NULL) {
     printf("Not a directory.\n");
@@ -165,7 +177,6 @@ void searchFileinDirectory(char *directory, char *file) {
     directoryFiles[strlen(directoryFiles) +1 ] = '\0';
     directoryFiles[strlen(directoryFiles)] = '/';
     strcat(directoryFiles,currententry->d_name);
-    //printf("%s\n", currententry->d_name);
   }
 
   FILE *f = fopen(file, "r");
@@ -184,10 +195,27 @@ void searchFileinDirectory(char *directory, char *file) {
       //printf("%s\n", line);
       fprintf(outfile, "%d:\t%s\n", lineNum, line);
 
+    //  printf("%s\n", line);
+      //
+      if(!strcmp(option, "-i")) {
+        for (int i = 0 ; i < strlen(line) ; i++) {
+            line[i] = tolower(line[i]);
+        }
+      }
+
       if(strstr(line, parameter)) {
 
-        /* WHOLE LINE MATCHES ONLY */
-        if(!strcmp(option, "-x")) {
+        lineCpy = line;
+
+        if (!strcmp(option, "-c")) {
+           count++;
+
+
+        }  else if (!strcmp(option, "-i")) {
+            printf("%s\n",lineCpy);
+
+          //WHOLE LINE MATCHES ONLY
+        } else if(!strcmp(option, "-x")) {
 
           /* must add terminating character to check if they're equal since the line ends with \0, so checking for whole line will be 'apples\n' != 'apples'; */
           if(!strcmp(line, strcat(parameter, "\n")))
@@ -215,6 +243,10 @@ void searchFileinDirectory(char *directory, char *file) {
 
     if (isFile)
       printf("%s\n", filename);
+
+    if (!strcmp(option, "-c")) {
+          printf("%d\n",count);
+      }
 
     fclose(outfile);
   }

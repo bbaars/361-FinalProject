@@ -1,0 +1,26 @@
+0:	@Author: Brandon Baars <brandon>
+
+1:	@Date:   Thursday, July 6th 2017, 7:48:21 pm
+
+2:	@Filename: test.txt
+
+3:	@Last modified by:   brandon
+
+4:	@Last modified time: Thursday, July 6th 2017, 9:07:47 pm
+
+5:	
+
+6:	whole line
+
+7:	include
+
+8:	inCluDeeR
+
+9:	;laskjdf wholelinematch
+
+10:	;asldkjf wholelinematch
+
+11:	;sdkljfwholelinematch
+
+12:	;lkasdjf
+
