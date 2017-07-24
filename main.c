@@ -3,10 +3,10 @@
  * @Date:   Saturday, June 3rd 2017, 2:04:24 pm
  * @Filename: main.c
  * @Last modified by:   brandon
- * @Last modified time: Wednesday, July 19th 2017, 7:54:55 pm
+ * @Last modified time: Monday, July 24th 2017, 12:46:51 pm
  *
  * CIS 361 Final Project
- * GREP Simulator using c in a UNIX Environment
+ * GREP Simulator using C in a UNIX Environment
  **/
 
 #include <stdio.h>
@@ -23,19 +23,30 @@ void printUsage();
 void callRequiredFunction();
 _Bool checkValidInput();
 void openFile();
-void searchFileinDirectory(char *directory, char *filename);
+void searchFileinDirectory(char *filepath, char *file);
 
-// TODO: Regular Expressions!
-
+// TODO: Regular Expressions! RECOMP AND REGEX
 
 /* holds our file name, the option, and parameters */
-char filename[256], option[10], parameter[512];
+char filename[256], option[10], parameter[512], fileArray[100][100];
+
+/* whether or not an array of files is searched for */
+_Bool isArray = 0;
 
 int main(int argc, char const *argv[]) {
 
-  if (argc == 3 || argc == 4) {
+  int count = 0;
 
-      if (argc == 4) {
+  for (int i = 0 ; i < argc ; i++) {
+    if ((i > 1 && strrchr(argv[1],'-') == NULL) || i > 2) {
+      strcpy(fileArray[count],argv[i]);
+      count++;
+    }
+  }
+
+  if (argc >= 3) {
+
+      if (argc == 4 ) {
         strncpy(option, argv[1], sizeof(option));
         strncpy(parameter, argv[2], sizeof(parameter));
         strncpy(filename, argv[3], sizeof(filename));
@@ -49,12 +60,31 @@ int main(int argc, char const *argv[]) {
         /* checks for next inputs to contain items */
         if(argc == 4) {
             callRequiredFunction();
-        } else
+        } else if (argc > 4) {
+          strncpy(option, argv[1], sizeof(option));
+          strncpy(parameter, argv[2], sizeof(parameter));
+          isArray = 1;
+          for (int i = 0 ; i < count ; i++){
+            strncpy(filename, fileArray[i], sizeof(filename));
+            callRequiredFunction();
+          }
+        }else
             printUsage();
       } else if (argc == 3) {
         callRequiredFunction();
       } else {
-        printUsage();
+        if (strrchr(argv[1],'-') != NULL) {
+          strncpy(option, argv[1], sizeof(option));
+          strncpy(parameter, argv[2], sizeof(parameter));
+        } else {
+          strncpy(parameter, argv[1], sizeof(parameter));
+        }
+
+        isArray = 1;
+        for (int i = 0 ; i < count ; i++){
+          strncpy(filename, fileArray[i], sizeof(filename));
+          callRequiredFunction();
+        }
       }
     }
 
@@ -100,9 +130,6 @@ void callRequiredFunction() {
     ptr = strrchr(filename, ch);
 
     /* add 1 to get the filename */
-
-    // TODO: The first character of PTR To see if its a *
-
     ptr += 1;
 
     /* allocate just enough memory to store our directory */
@@ -118,73 +145,32 @@ void callRequiredFunction() {
     strncpy(directory, "./", strlen("./"));
   }
 
-  if(!strcmp(option, "-c")) {
-    // PRINT ONLY COUNT OF LINES
-    searchFileinDirectory(directory, filename);
-
-  } else if (!strcmp(option, "-i")) {
+  if (!strcmp(option, "-i")) {
     // IGNORE CASE
     for (int i = 0 ; i < strlen(parameter) ; i++) {
       parameter[i] = tolower(parameter[i]);
     }
-
-    searchFileinDirectory(directory, filename);
-
-  } else if(!strcmp(option, "-l")) {
-    //LIST ONLY FILE NAME
-    searchFileinDirectory(directory, filename);
-
-  }else if(!strcmp(option, "-n")) {
-    //GIVES LINE NUMBER OF PATTER MATCH
-    searchFileinDirectory(directory, filename);
-
-  } else if(!strcmp(option, "-v")) {
-    //REVERSE SEARCH
-    searchFileinDirectory(directory, filename);
-
-  } else if(!strcmp(option, "-w")) {
-    // SELECT WHOLE WORD MATCHES ONLY
-    // TOKEN BY SPACE DO STRCMP
-
-  } else if(!strcmp(option, "-x")) {
-    //WHOLE LINE MATCHES ONLY
-    searchFileinDirectory(directory, filename);
-
+    searchFileinDirectory(filename, ptr);
   } else {
-    //NO OPTIONS WERE PASSED
-    searchFileinDirectory(directory, filename);
+    searchFileinDirectory(filename, ptr);
   }
 }
 
 
-void searchFileinDirectory(char *directory, char *file) {
+void searchFileinDirectory(char *filepath, char *file) {
 
   char line[512];
-  char directoryFiles[512];
-  DIR *d = opendir(directory);
-  struct dirent* currententry;
   int lineNum = 0;
   _Bool isFile = 0;
-  char *lineCpy;
-
-  if (d == NULL) {
-    printf("Not a directory.\n");
-    return;
-  }
-
-  while((currententry = readdir(d)) != NULL){
-    strcpy(directoryFiles, directory);
-    directoryFiles[strlen(directoryFiles) +1 ] = '\0';
-    directoryFiles[strlen(directoryFiles)] = '/';
-    strcat(directoryFiles,currententry->d_name);
-  }
-
-  FILE *f = fopen(file, "r");
-
+  char lineCpy[512];
   int count = 0;
 
+  //printf("Opening File: %s\n", filepath);
+
+  FILE *f = fopen(filepath, "r");
+
   if(f == NULL) {
-    printf("File does not exist.\n");
+    printf("File %s does not exist.\n", filepath);
   } else {
 
     FILE *outfile = fopen("output.txt", "w");
@@ -192,11 +178,10 @@ void searchFileinDirectory(char *directory, char *file) {
     /* while the end of file has not been reached */
     while (fgets(line, 1024, f)) {
 
-      //printf("%s\n", line);
       fprintf(outfile, "%d:\t%s\n", lineNum, line);
 
-    //  printf("%s\n", line);
-      //
+      strcpy(lineCpy, line);
+
       if(!strcmp(option, "-i")) {
         for (int i = 0 ; i < strlen(line) ; i++) {
             line[i] = tolower(line[i]);
@@ -205,11 +190,12 @@ void searchFileinDirectory(char *directory, char *file) {
 
       if(strstr(line, parameter)) {
 
-        lineCpy = line;
+        if (isArray && strcmp(option, "-l") != 0) {
+          //printf("%s: ", file);
+        }
 
         if (!strcmp(option, "-c")) {
            count++;
-
 
         }  else if (!strcmp(option, "-i")) {
             printf("%s\n",lineCpy);
@@ -217,13 +203,19 @@ void searchFileinDirectory(char *directory, char *file) {
           //WHOLE LINE MATCHES ONLY
         } else if(!strcmp(option, "-x")) {
 
+          char tempParameter[strlen(parameter) + 2];
+
+          strcpy(tempParameter, parameter);
+
           /* must add terminating character to check if they're equal since the line ends with \0, so checking for whole line will be 'apples\n' != 'apples'; */
-          if(!strcmp(line, strcat(parameter, "\n")))
+          if(!strcmp(line, strcat(tempParameter, "\n")))
             printf("%s",line);
+
         }
           /* LIST ONLY FILE NAME */
         else if(!strcmp(option, "-l")) {
-          isFile = 1;
+          printf("%s\n", file);
+          return;
 
         /* GIVES LINE NUMBER OF PATTER MATCH */
         } else if(!strcmp(option, "-n")) {
@@ -242,7 +234,7 @@ void searchFileinDirectory(char *directory, char *file) {
     }
 
     if (isFile)
-      printf("%s\n", filename);
+      printf("%s\n", file);
 
     if (!strcmp(option, "-c")) {
           printf("%d\n",count);
