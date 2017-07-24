@@ -3,7 +3,7 @@
  * @Date:   Saturday, June 3rd 2017, 2:04:24 pm
  * @Filename: main.c
  * @Last modified by:   brandon
- * @Last modified time: Monday, July 24th 2017, 12:46:51 pm
+ * @Last modified time: Monday, July 24th 2017, 1:00:45 pm
  *
  * CIS 361 Final Project
  * GREP Simulator using C in a UNIX Environment
@@ -44,15 +44,14 @@ int main(int argc, char const *argv[]) {
     }
   }
 
+/* if the user has added the right amount of arguements */
   if (argc >= 3) {
 
+      /* if it's exactly 4 theres an option passed in */
       if (argc == 4 ) {
         strncpy(option, argv[1], sizeof(option));
         strncpy(parameter, argv[2], sizeof(parameter));
         strncpy(filename, argv[3], sizeof(filename));
-      } else {
-        strncpy(parameter, argv[1], sizeof(parameter));
-        strncpy(filename, argv[2], sizeof(filename));
       }
 
       /* checks for a valid command */
@@ -60,6 +59,8 @@ int main(int argc, char const *argv[]) {
         /* checks for next inputs to contain items */
         if(argc == 4) {
             callRequiredFunction();
+
+        /* if greater than 4, there was array of files */
         } else if (argc > 4) {
           strncpy(option, argv[1], sizeof(option));
           strncpy(parameter, argv[2], sizeof(parameter));
@@ -70,8 +71,11 @@ int main(int argc, char const *argv[]) {
           }
         }else
             printUsage();
+      /* if only 3, there was no array of files and no options */
       } else if (argc == 3) {
         callRequiredFunction();
+
+      /* there was an array of files and maybe an option */
       } else {
         if (strrchr(argv[1],'-') != NULL) {
           strncpy(option, argv[1], sizeof(option));
@@ -190,8 +194,8 @@ void searchFileinDirectory(char *filepath, char *file) {
 
       if(strstr(line, parameter)) {
 
-        if (isArray && strcmp(option, "-l") != 0) {
-          //printf("%s: ", file);
+        if (((isArray && strcmp(option, "-l") != 0) && count < 1 && strcmp(option, "-v"))) {
+          printf("%s: ", file);
         }
 
         if (!strcmp(option, "-c")) {
@@ -207,6 +211,7 @@ void searchFileinDirectory(char *filepath, char *file) {
 
           strcpy(tempParameter, parameter);
 
+          count++;
           /* must add terminating character to check if they're equal since the line ends with \0, so checking for whole line will be 'apples\n' != 'apples'; */
           if(!strcmp(line, strcat(tempParameter, "\n")))
             printf("%s",line);
@@ -224,9 +229,13 @@ void searchFileinDirectory(char *filepath, char *file) {
         /* no options were passed and were not looking for reversing string */
         } else if (strcmp(option, "-v") != 0) {
             printf("%s\n",line);
-            count++;
+            //count++;
         }
     } else if (!strcmp(option, "-v") && strstr(line, parameter) == NULL) {
+
+        if(isArray && line[0] != '\n')
+          printf("%s ", file);
+
         printf("%s\n", line);
       }
 
