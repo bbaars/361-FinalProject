@@ -3,7 +3,7 @@
  * @Date:   Saturday, June 3rd 2017, 2:04:24 pm
  * @Filename: main.c
  * @Last modified by:   brandon
- * @Last modified time: Monday, July 24th 2017, 1:00:45 pm
+ * @Last modified time: Monday, July 24th 2017, 1:51:26 pm
  *
  * CIS 361 Final Project
  * GREP Simulator using C in a UNIX Environment
@@ -65,9 +65,11 @@ int main(int argc, char const *argv[]) {
           strncpy(option, argv[1], sizeof(option));
           strncpy(parameter, argv[2], sizeof(parameter));
           isArray = 1;
+
           for (int i = 0 ; i < count ; i++){
             strncpy(filename, fileArray[i], sizeof(filename));
             callRequiredFunction();
+            printf("\n");
           }
         }else
             printUsage();
@@ -83,11 +85,11 @@ int main(int argc, char const *argv[]) {
         } else {
           strncpy(parameter, argv[1], sizeof(parameter));
         }
-
         isArray = 1;
         for (int i = 0 ; i < count ; i++){
           strncpy(filename, fileArray[i], sizeof(filename));
           callRequiredFunction();
+          printf("\n");
         }
       }
     }
@@ -194,7 +196,7 @@ void searchFileinDirectory(char *filepath, char *file) {
 
       if(strstr(line, parameter)) {
 
-        if (((isArray && strcmp(option, "-l") != 0) && count < 1 && strcmp(option, "-v"))) {
+        if (((isArray && strcmp(option, "-l") != 0) && count < 1 && strcmp(option, "-v")) && strcmp(option, "-w")) {
           printf("%s: ", file);
         }
 
@@ -202,7 +204,7 @@ void searchFileinDirectory(char *filepath, char *file) {
            count++;
 
         }  else if (!strcmp(option, "-i")) {
-            printf("%s\n",lineCpy);
+            printf("%s",lineCpy);
 
           //WHOLE LINE MATCHES ONLY
         } else if(!strcmp(option, "-x")) {
@@ -216,27 +218,50 @@ void searchFileinDirectory(char *filepath, char *file) {
           if(!strcmp(line, strcat(tempParameter, "\n")))
             printf("%s",line);
 
-        }
+        } else if(!strcmp(option, "-w")) {
+
+            char *ptr;
+            ptr = strtok(lineCpy, " ,.()//{}-|!@#$^&*<>?");
+
+            char tempParameter[strlen(parameter) + 2];
+
+            strcpy(tempParameter, parameter);
+
+            count++;
+            /* must add terminating character to check if they're equal since the line ends with \0, so checking for whole line will be 'apples\n' != 'apples'; */
+            if(!strcmp(line, strcat(tempParameter, "\n"))) {
+              printf("%s: %s",file, line);
+            }
+
+            while(ptr != NULL) {
+              if(!strcmp(ptr, parameter)){
+                if(isArray)
+                  printf("%s: ", file);
+                printf("%s\n", line);
+                break;
+              }
+              ptr = strtok(NULL, " ,.()//{}-|!@#$^&*<>?");
+            }
+
           /* LIST ONLY FILE NAME */
-        else if(!strcmp(option, "-l")) {
-          printf("%s\n", file);
+        } else if(!strcmp(option, "-l")) {
+          printf("%s", file);
           return;
 
         /* GIVES LINE NUMBER OF PATTER MATCH */
         } else if(!strcmp(option, "-n")) {
-          printf("%d\t%s\n",lineNum, line);
+          printf("%d\t%s",lineNum, line);
 
         /* no options were passed and were not looking for reversing string */
         } else if (strcmp(option, "-v") != 0) {
-            printf("%s\n",line);
-            //count++;
+            printf("%s",line);
         }
     } else if (!strcmp(option, "-v") && strstr(line, parameter) == NULL) {
 
         if(isArray && line[0] != '\n')
           printf("%s ", file);
 
-        printf("%s\n", line);
+        printf("%s", line);
       }
 
       ++lineNum;
@@ -246,11 +271,10 @@ void searchFileinDirectory(char *filepath, char *file) {
       printf("%s\n", file);
 
     if (!strcmp(option, "-c")) {
-          printf("%d\n",count);
+          printf("%d",count);
       }
 
     fclose(outfile);
   }
-
   fclose(f);
 }
