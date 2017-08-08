@@ -3,7 +3,7 @@
  * @Date:   Saturday, June 3rd 2017, 2:04:24 pm
  * @Filename: main.c
  * @Last modified by:   brandon
- * @Last modified time: Monday, July 24th 2017, 1:51:26 pm
+ * @Last modified time: Monday, August 7th 2017, 10:48:02 pm
  *
  * CIS 361 Final Project
  * GREP Simulator using C in a UNIX Environment
@@ -25,18 +25,19 @@ _Bool checkValidInput();
 void openFile();
 void searchFileinDirectory(char *filepath, char *file);
 
-// TODO: Regular Expressions! RECOMP AND REGEX
-
 /* holds our file name, the option, and parameters */
 char filename[256], option[10], parameter[512], fileArray[100][100];
 
 /* whether or not an array of files is searched for */
 _Bool isArray = 0;
 
+_Bool noCommand = 0;
+
 int main(int argc, char const *argv[]) {
 
   int count = 0;
 
+  /* Get the array of Files passed in by using '*' wildcard character */
   for (int i = 0 ; i < argc ; i++) {
     if ((i > 1 && strrchr(argv[1],'-') == NULL) || i > 2) {
       strcpy(fileArray[count],argv[i]);
@@ -75,6 +76,9 @@ int main(int argc, char const *argv[]) {
             printUsage();
       /* if only 3, there was no array of files and no options */
       } else if (argc == 3) {
+        noCommand = 1;
+        strncpy(parameter, argv[1], sizeof(parameter));
+        strncpy(filename, argv[2], sizeof(filename));
         callRequiredFunction();
 
       /* there was an array of files and maybe an option */
@@ -125,7 +129,6 @@ _Bool checkValidInput() {
 
 void callRequiredFunction() {
 
-  char *directory;
   char *ptr;
   int ch = '/';
 
@@ -137,18 +140,6 @@ void callRequiredFunction() {
 
     /* add 1 to get the filename */
     ptr += 1;
-
-    /* allocate just enough memory to store our directory */
-    directory = (char *)malloc(strlen(filename) - strlen(ptr));
-
-    /* copy the directory over to our newly allocated memory  */
-    strncpy(directory, filename, strlen(filename) - strlen(ptr));
-
-  } else {
-
-    /* if there was no path given, then just the file name, our directory is set to our default of './' */
-    directory = (char *)malloc(strlen("./"));
-    strncpy(directory, "./", strlen("./"));
   }
 
   if (!strcmp(option, "-i")) {
@@ -170,8 +161,6 @@ void searchFileinDirectory(char *filepath, char *file) {
   _Bool isFile = 0;
   char lineCpy[512];
   int count = 0;
-
-  //printf("Opening File: %s\n", filepath);
 
   FILE *f = fopen(filepath, "r");
 
@@ -273,6 +262,8 @@ void searchFileinDirectory(char *filepath, char *file) {
     if (!strcmp(option, "-c")) {
           printf("%d",count);
       }
+
+    puts("");
 
     fclose(outfile);
   }
